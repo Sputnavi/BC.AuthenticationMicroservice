@@ -1,7 +1,8 @@
 using BC.AuthenticationMicroservice.Models;
-using BC.AuthenticationMicroservice.ViewModels;
+using BC.AuthenticationMicroservice.Boundary.Request;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using BC.AuthenticationMicroservice.Repository;
 
 namespace BC.AuthenticationMicroservice.Controllers
 {
@@ -9,24 +10,20 @@ namespace BC.AuthenticationMicroservice.Controllers
     [Route("[controller]")]
     public class AuthenticationController : ControllerBase
     {
-        private readonly ApplicationContext _context;
         private readonly UserManager<User> _userManager;
         private readonly SignInManager<User> _signInManager;
 
-        public AuthenticationController(ApplicationContext context,
-            UserManager<User> userManager,
-            SignInManager<User> signInManager)
+        public AuthenticationController(UserManager<User> userManager, SignInManager<User> signInManager)
         {
-            _context = context;
             _userManager = userManager;
             _signInManager = signInManager;
         }
 
         [HttpGet("login")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Login(LoginViewModel loginViewModel)
+        public async Task<IActionResult> Login(LoginRequest request)
         {
-            var result = await _signInManager.PasswordSignInAsync(loginViewModel.Email, loginViewModel.Password, false, false);
+            var result = await _signInManager.PasswordSignInAsync(request.Email, request.Password, false, false);
 
             if (result.Succeeded)
             {
@@ -37,17 +34,17 @@ namespace BC.AuthenticationMicroservice.Controllers
         }
 
         [HttpPost("register")]
-        public async Task<IActionResult> Register(RegisterViewModel registerViewModel)
+        public async Task<IActionResult> Register(RegisterRequest request)
         {
             var user = new User()
             {
-                Email = registerViewModel.Email,
-                UserName = $"{registerViewModel.FirstName}_{registerViewModel.SecondName}",
-                FirstName = registerViewModel.FirstName,
-                SecondName = registerViewModel.SecondName
+                Email = request.Email,
+                UserName = $"{request.FirstName}_{request.SecondName}",
+                FirstName = request.FirstName,
+                SecondName = request.SecondName
             };
 
-            IdentityResult result = await _userManager.CreateAsync(user, registerViewModel.Password);
+            IdentityResult result = await _userManager.CreateAsync(user, request.Password);
 
             if (!result.Succeeded)
             {

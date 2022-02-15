@@ -1,8 +1,8 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace BC.AuthenticationMicroservice.ViewModels
+namespace BC.AuthenticationMicroservice.Boundary.Request
 {
-    public class LoginViewModel
+    public class LoginRequest
     {
         [Required]
         public string Email { get; set; }
