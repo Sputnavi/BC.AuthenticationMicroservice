@@ -2,30 +2,25 @@ using BC.AuthenticationMicroservice.Models;
 using BC.AuthenticationMicroservice.Boundary.Request;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using BC.AuthenticationMicroservice.Repository;
 
 namespace BC.AuthenticationMicroservice.Controllers
 {
     [ApiController]
-    [Route("[controller]")]
+    [Route("api/[controller]")]
     public class AuthenticationController : ControllerBase
     {
         private readonly UserManager<User> _userManager;
-        private readonly SignInManager<User> _signInManager;
 
-        public AuthenticationController(UserManager<User> userManager, SignInManager<User> signInManager)
+        public AuthenticationController(UserManager<User> userManager)
         {
             _userManager = userManager;
-            _signInManager = signInManager;
         }
 
-        [HttpGet("login")]
-        [ValidateAntiForgeryToken]
+        [HttpPost("login")]
         public async Task<IActionResult> Login(LoginRequest request)
         {
-            var result = await _signInManager.PasswordSignInAsync(request.Email, request.Password, false, false);
-
-            if (result.Succeeded)
+            User user = await _userManager.FindByEmailAsync(request.Email);
+            if (user is not null && await _userManager.CheckPasswordAsync(user, request.Password))
             {
                 return Ok();
             }
