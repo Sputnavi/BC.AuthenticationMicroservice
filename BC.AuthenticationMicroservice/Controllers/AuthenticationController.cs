@@ -2,6 +2,7 @@ using BC.AuthenticationMicroservice.Models;
 using BC.AuthenticationMicroservice.Boundary.Request;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using BC.AuthenticationMicroservice.Interfaces;
 
 namespace BC.AuthenticationMicroservice.Controllers
 {
@@ -10,22 +11,28 @@ namespace BC.AuthenticationMicroservice.Controllers
     public class AuthenticationController : ControllerBase
     {
         private readonly UserManager<User> _userManager;
+        private readonly IAuthenticationService _authenticationService;
+        private readonly IJwtTokenGenerator _jwtTokenGenerator;
 
-        public AuthenticationController(UserManager<User> userManager)
+        public AuthenticationController(UserManager<User> userManager, IAuthenticationService authenticationService, IJwtTokenGenerator jwtTokenGenerator)
         {
             _userManager = userManager;
+            _authenticationService = authenticationService;
+            _jwtTokenGenerator = jwtTokenGenerator;
         }
 
         [HttpPost("login")]
         public async Task<IActionResult> Login(LoginRequest request)
         {
-            User user = await _userManager.FindByEmailAsync(request.Email);
-            if (user is not null && await _userManager.CheckPasswordAsync(user, request.Password))
+            User user = await _authenticationService.AuthenticateAsync(request);
+            if (user is null)
             {
-                return Ok();
+                return Unauthorized();
             }
 
-            return Unauthorized();
+            string token = await _jwtTokenGenerator.GenerateTokenAsync(user);
+
+            return Ok(new { Token = token });
         }
 
         [HttpPost("register")]
