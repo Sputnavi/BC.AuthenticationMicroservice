@@ -33,6 +33,10 @@ namespace BC.AuthenticationMicroservice.Tests.Controllers
         public async Task LoginAsync_CorrectCredenticals_ReturnsValidToken()
         {
             string token = "someTokenExample";
+            var loginResponse = new LoginResponse()
+            {
+                Token = token
+            };
             _authenticationService.Setup(x => x.AuthenticateAsync(It.IsAny<LoginRequest>()))
                 .ReturnsAsync(new User());
             _jwtTokenGenerator.Setup(x => x.GenerateTokenAsync(It.IsAny<User>()))
@@ -40,13 +44,15 @@ namespace BC.AuthenticationMicroservice.Tests.Controllers
 
             var response = await _sut.LoginAsync(new LoginRequest());
 
+            response.Should().NotBeNull();
             response.Should().BeOfType<OkObjectResult>();
+
             var result = response as OkObjectResult;
-            result.Should().NotBeNull();
             result.Value.Should().NotBeNull();
             result.Value.Should().BeOfType<LoginResponse>();
-            var loginResponse = result.Value as LoginResponse;
-            loginResponse.Token.Should().Be(token);
+
+            var resultLoginResponse = result.Value as LoginResponse;
+            resultLoginResponse.Should().BeEquivalentTo(loginResponse);
         }
 
         [Fact]
