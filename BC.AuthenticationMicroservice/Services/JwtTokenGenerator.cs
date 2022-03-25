@@ -32,7 +32,8 @@ namespace BC.AuthenticationMicroservice.Services
             IList<Claim> claims = new List<Claim>()
             {
                 new Claim(ClaimTypes.NameIdentifier, user.Id),
-                new Claim(ClaimTypes.Name, user.UserName)
+                new Claim(ClaimTypes.Name, user.UserName),
+                new Claim(ClaimTypes.Email, user.Email),
             };
 
             IList<string> roles = await _userManager.GetRolesAsync(user);
@@ -62,12 +63,12 @@ namespace BC.AuthenticationMicroservice.Services
             return tokenOptions;
         }
 
-        private SigningCredentials GetSigningCredentials(IConfigurationSection jwtSettings)
+        private static SigningCredentials GetSigningCredentials(IConfigurationSection jwtSettings)
         {
-            string key = jwtSettings["secretKey"];
+            string key = jwtSettings["secretKey"] ?? Environment.GetEnvironmentVariable("secretKey");
             if (key is null)
             {
-                key = Environment.GetEnvironmentVariable("secretKey");
+                throw new Exception("No secret key provided from Configuration or Environment");
             }
 
             byte[] encodedKey = Encoding.UTF8.GetBytes(key);
