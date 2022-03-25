@@ -22,7 +22,7 @@ namespace BC.AuthenticationMicroservice.Controllers
         }
 
         [HttpPost("login")]
-        public async Task<IActionResult> Login(LoginRequest request)
+        public async Task<IActionResult> LoginAsync(LoginRequest request)
         {
             User user = await _authenticationService.AuthenticateAsync(request);
             if (user is null)
@@ -36,7 +36,7 @@ namespace BC.AuthenticationMicroservice.Controllers
         }
 
         [HttpPost("register")]
-        public async Task<IActionResult> Register(RegisterRequest request)
+        public async Task<IActionResult> RegisterAsync(RegisterRequest request)
         {
             var user = new User()
             {
