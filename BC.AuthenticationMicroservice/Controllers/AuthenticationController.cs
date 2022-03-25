@@ -3,6 +3,7 @@ using BC.AuthenticationMicroservice.Boundary.Request;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using BC.AuthenticationMicroservice.Interfaces;
+using BC.AuthenticationMicroservice.Boundary.Response;
 
 namespace BC.AuthenticationMicroservice.Controllers
 {
@@ -32,7 +33,7 @@ namespace BC.AuthenticationMicroservice.Controllers
 
             string token = await _jwtTokenGenerator.GenerateTokenAsync(user);
 
-            return Ok(new { Token = token });
+            return Ok(new LoginResponse { Token = token });
         }
 
         [HttpPost("register")]
