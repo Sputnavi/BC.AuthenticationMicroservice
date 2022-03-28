@@ -39,7 +39,7 @@ namespace BC.AuthenticationMicroservice.Services
             IList<string> roles = await _userManager.GetRolesAsync(user);
             foreach (var role in roles)
             {
-                var claim = new Claim(ClaimTypes.Role, role);
+                var claim = new Claim("Role", role);
                 claims.Add(claim);
             }
 
