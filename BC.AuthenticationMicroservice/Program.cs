@@ -18,6 +18,7 @@ builder.Services.AddIdentity<User, IdentityRole>()
 builder.Services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
 builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
 builder.Services.AddSingleton<ILoggerManager, LoggerManager>();
+builder.Services.AddSingleton<IUserService, UserService>();
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();

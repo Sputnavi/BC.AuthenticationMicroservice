@@ -5,7 +5,9 @@ using Microsoft.EntityFrameworkCore;
 
 namespace BC.AuthenticationMicroservice.Repository
 {
-    public class ApplicationContext : IdentityDbContext<User>
+    public class ApplicationContext : IdentityDbContext<User, Role, string,
+        IdentityUserClaim<string>, UserRole, IdentityUserLogin<string>,
+        IdentityRoleClaim<string>, IdentityUserToken<string>>
     {
         public ApplicationContext(DbContextOptions<ApplicationContext> options)
             : base(options)
@@ -17,8 +19,25 @@ namespace BC.AuthenticationMicroservice.Repository
         {
             base.OnModelCreating(builder);
 
+            builder.Entity<User>(b =>
+            {
+                b.HasMany(e => e.UserRoles)
+                .WithOne(e => e.User)
+                .HasForeignKey(ur => ur.UserId)
+                .IsRequired();
+            });
+
+            builder.Entity<Role>(b =>
+            {
+                b.HasMany(e => e.UserRoles)
+                    .WithOne(e => e.Role)
+                    .HasForeignKey(ur => ur.RoleId)
+                    .IsRequired();
+            });
+
             SeedData(builder);
         }
+      
 
         private static void SeedData(ModelBuilder builder)
         {
