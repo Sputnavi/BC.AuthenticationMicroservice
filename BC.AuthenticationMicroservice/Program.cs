@@ -1,3 +1,4 @@
+using BC.AuthenticationMicroservice.Extensions;
 using BC.AuthenticationMicroservice.Interfaces;
 using BC.AuthenticationMicroservice.Models;
 using BC.AuthenticationMicroservice.Profiles;
@@ -19,8 +20,9 @@ builder.Services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
 builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
 builder.Services.AddSingleton<ILoggerManager, LoggerManager>();
 builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IRoleService, RoleService>();
 builder.Services.AddAutoMapper(typeof(MappingProfile));
-
+builder.Services.ConfigureCors();
 
 builder.Services.AddControllers().AddNewtonsoftJson(options =>
     options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore
@@ -38,6 +40,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.UseCors("CorsPolicy");
 
 app.UseAuthentication();
 app.UseAuthorization();

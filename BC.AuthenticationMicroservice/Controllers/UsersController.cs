@@ -1,4 +1,5 @@
 ﻿using BC.AuthenticationMicroservice.Boundary.Request;
+using BC.AuthenticationMicroservice.CustomExceptions;
 using BC.AuthenticationMicroservice.Interfaces;
 using BC.AuthenticationMicroservice.Models;
 using BC.AuthenticationMicroservice.Services;
@@ -50,10 +51,19 @@ namespace BC.AuthenticationMicroservice.Controllers
                 _logger.LogWarn("UserDto can't be null");
                 return BadRequest();
             }
-
-            var createdUser = await _userService.CreateUserAsync(userDto).ConfigureAwait(false);
-            if (createdUser == null)
+            User createdUser = null;
+            try
             {
+                createdUser = await _userService.CreateUserAsync(userDto).ConfigureAwait(false);
+            }
+            catch (UserCreationException ucex)
+            {
+                _logger.LogError(ucex.Message);
+                return BadRequest(ucex.Message);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
                 return StatusCode(500);
             }
 

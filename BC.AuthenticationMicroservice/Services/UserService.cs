@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using BC.AuthenticationMicroservice.Boundary.Request;
 using BC.AuthenticationMicroservice.Boundary.Response;
+using BC.AuthenticationMicroservice.CustomExceptions;
 using BC.AuthenticationMicroservice.Interfaces;
 using BC.AuthenticationMicroservice.Models;
 using BC.AuthenticationMicroservice.Repository;
@@ -54,14 +55,14 @@ namespace BC.AuthenticationMicroservice.Services
             var roleExists = await RoleExistsAsync(userDto.Role).ConfigureAwait(false); 
             if (!roleExists)
             {
-                return null;
+                throw new Exception("Role doesn't exist");
             }
             var user = _mapper.Map<User>(userDto);
 
             var userResult = await _userManager.CreateAsync(user, userDto.Password).ConfigureAwait(false);
             if (!userResult.Succeeded)
             {
-                return null;//ToDo K:return smth normal
+                throw new UserCreationException(userResult.Errors);
             }
             
             var roleResult = await _userManager.AddToRoleAsync(user, userDto.Role).ConfigureAwait(false);
@@ -94,7 +95,20 @@ namespace BC.AuthenticationMicroservice.Services
             var result = await _userManager.DeleteAsync(user).ConfigureAwait(false);
             return result.Succeeded; 
         }
-        
+
+        public async Task<string> GetUserRoleAsync(string userId)
+        {
+            var user = _context.Users.FirstOrDefault(u => u.Id == userId);
+
+            if (user == null)
+            {
+                return null;
+            }
+
+            var roleList = await _userManager.GetRolesAsync(user).ConfigureAwait(false);
+            return roleList.FirstOrDefault();
+        }
+
         private async Task<bool> RoleExistsAsync(string role)
         {
             return await _roleManager.RoleExistsAsync(role).ConfigureAwait(false);

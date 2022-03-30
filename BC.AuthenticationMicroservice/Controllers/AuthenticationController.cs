@@ -3,6 +3,7 @@ using BC.AuthenticationMicroservice.Boundary.Request;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using BC.AuthenticationMicroservice.Interfaces;
+using BC.AuthenticationMicroservice.Services;
 
 namespace BC.AuthenticationMicroservice.Controllers
 {
@@ -13,12 +14,17 @@ namespace BC.AuthenticationMicroservice.Controllers
         private readonly UserManager<User> _userManager;
         private readonly IAuthenticationService _authenticationService;
         private readonly IJwtTokenGenerator _jwtTokenGenerator;
+        private readonly IConfiguration _configuration;
+        private readonly IUserService _userService;
 
-        public AuthenticationController(UserManager<User> userManager, IAuthenticationService authenticationService, IJwtTokenGenerator jwtTokenGenerator)
+        public AuthenticationController(UserManager<User> userManager, IAuthenticationService authenticationService, IJwtTokenGenerator jwtTokenGenerator, 
+            IConfiguration configuration, IUserService userService)
         {
             _userManager = userManager;
             _authenticationService = authenticationService;
             _jwtTokenGenerator = jwtTokenGenerator;
+            _configuration = configuration;
+            _userService = userService;
         }
 
         [HttpPost("login")]
@@ -31,8 +37,15 @@ namespace BC.AuthenticationMicroservice.Controllers
             }
 
             string token = await _jwtTokenGenerator.GenerateTokenAsync(user);
+            IConfigurationSection jwtSettings = _configuration.GetSection("JwtSettings");
 
-            return Ok(new { Token = token });
+            var response = new
+            {
+                token = token,
+                minutesToExpire = Convert.ToDouble(jwtSettings["minutesToExpire"]),
+                role = await _userService.GetUserRoleAsync(user.Id)
+            };
+            return Ok(response);
         }
 
         [HttpPost("register")]

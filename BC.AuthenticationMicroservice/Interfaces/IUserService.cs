@@ -11,5 +11,6 @@ namespace BC.AuthenticationMicroservice.Interfaces
         Task<User> CreateUserAsync(RegisterRequest userDto);
         Task<bool> UpdateUserAsync(string id, UserUpdateDto userDto);
         Task<bool> DeleteUserAsync(string id);
+        Task<string> GetUserRoleAsync(string userId);
     }
 }

@@ -20,6 +20,7 @@ namespace BC.AuthenticationMicroservice.Profiles
                     opt => opt.MapFrom(src => $"{src.FirstName}_{src.SecondName}"));
 
             CreateMap<UserUpdateDto, User>();
+            CreateMap<Role, GetRole>();
         }
     }
 }
