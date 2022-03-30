@@ -1,8 +1,8 @@
 using BC.AuthenticationMicroservice.Interfaces;
 using BC.AuthenticationMicroservice.Models;
+using BC.AuthenticationMicroservice.Profiles;
 using BC.AuthenticationMicroservice.Repository;
 using BC.AuthenticationMicroservice.Services;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using NLog;
 
@@ -19,6 +19,8 @@ builder.Services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
 builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
 builder.Services.AddSingleton<ILoggerManager, LoggerManager>();
 builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddAutoMapper(typeof(MappingProfile));
+
 
 builder.Services.AddControllers().AddNewtonsoftJson(options =>
     options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore

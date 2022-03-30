@@ -51,12 +51,13 @@ namespace BC.AuthenticationMicroservice.Controllers
                 return BadRequest();
             }
 
-            var created = await _userService.CreateUserAsync(userDto).ConfigureAwait(false);
-            if (!created)
+            var createdUser = await _userService.CreateUserAsync(userDto).ConfigureAwait(false);
+            if (createdUser == null)
             {
                 return StatusCode(500);
             }
-            return StatusCode(201);
+
+            return new ObjectResult(createdUser) { StatusCode = StatusCodes.Status201Created };
         }
 
         [HttpPut("{id}")]
@@ -73,7 +74,7 @@ namespace BC.AuthenticationMicroservice.Controllers
             {
                 return StatusCode(500);
             }
-            return StatusCode(200);
+            return NoContent();
         }
 
         //[HttpPut("{id}/password-change")]
@@ -102,7 +103,7 @@ namespace BC.AuthenticationMicroservice.Controllers
             {
                 return StatusCode(500);
             }
-            return StatusCode(200);
+            return NoContent();
         }
 
         //[HttpGet("account")]

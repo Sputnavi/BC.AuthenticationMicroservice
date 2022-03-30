@@ -1,4 +1,6 @@
-﻿using BC.AuthenticationMicroservice.Boundary.Request;
+﻿using AutoMapper;
+using BC.AuthenticationMicroservice.Boundary.Request;
+using BC.AuthenticationMicroservice.Boundary.Response;
 using BC.AuthenticationMicroservice.Interfaces;
 using BC.AuthenticationMicroservice.Models;
 using BC.AuthenticationMicroservice.Repository;
@@ -12,71 +14,71 @@ namespace BC.AuthenticationMicroservice.Services
         private readonly UserManager<User> _userManager;
         private readonly RoleManager<Role> _roleManager;
         private readonly ApplicationContext _context;
+        private readonly IMapper _mapper;
 
-        public UserService(UserManager<User> userManager, RoleManager<Role> roleManager, ApplicationContext context)
+        public UserService(UserManager<User> userManager, RoleManager<Role> roleManager, ApplicationContext context,
+            IMapper mapper)
         {
             _userManager = userManager;
             _roleManager = roleManager;
             _context = context;
+            _mapper = mapper;
         }
 
-        public async Task<List<User>> GetUsersWithRolesAsync()
+        public async Task<List<UserWithRole>> GetUsersWithRolesAsync()
         {
-            return await _context.Users
+            var domainUsers = await _context.Users
                 .Include(x => x.UserRoles)
                     .ThenInclude(x => x.Role)
                 .AsNoTracking()
                 .ToListAsync()
                 .ConfigureAwait(false);
+
+            var users = _mapper.Map<List<UserWithRole>>(domainUsers);
+            return users;
         }
         
-        public User GetUserWithRoleById(string id)
+        public UserWithRole GetUserWithRoleById(string id)
         {
-            return _context.Users
+            var domainUser = _context.Users
                 .Include(x => x.UserRoles)
                     .ThenInclude(x => x.Role)
                     .FirstOrDefault(u => u.Id == id);
+            
+            var user = _mapper.Map<UserWithRole>(domainUser);
+            return user;
         }
 
-        public async Task<bool> CreateUserAsync(RegisterRequest userDto)
+        public async Task<User> CreateUserAsync(RegisterRequest userDto)
         {
             var roleExists = await RoleExistsAsync(userDto.Role).ConfigureAwait(false); 
             if (!roleExists)
             {
-                return false;
+                return null;
             }
-            var user = new User()
-            {
-                Email = userDto.Email,
-                UserName = $"{userDto.FirstName}_{userDto.SecondName}",//ToDo K: overrise??
-                FirstName = userDto.FirstName,
-                SecondName = userDto.SecondName
-            };
+            var user = _mapper.Map<User>(userDto);
 
             var userResult = await _userManager.CreateAsync(user, userDto.Password).ConfigureAwait(false);
             if (!userResult.Succeeded)
             {
-                return false;//ToDo K:return smth normal
+                return null;//ToDo K:return smth normal
             }
             
             var roleResult = await _userManager.AddToRoleAsync(user, userDto.Role).ConfigureAwait(false);
-            return roleResult.Succeeded;
+            return user;
         }
 
         public async Task<bool> UpdateUserAsync(string id, UserUpdateDto userDto)
         {
-            var user = await _userManager.FindByIdAsync(id);
+            var user = await _userManager.FindByIdAsync(id).ConfigureAwait(false);
             if (user == null)
             {
                 return false;
             }
 
-            user.Email = userDto.Email;
-            user.FirstName = userDto.FirstName;
-            user.SecondName = userDto.SecondName;
-            user.UserName = $"{userDto.FirstName}_{userDto.SecondName}";//ToDo K: overrise?? mapping?
+            var updatedUser = _mapper.Map(userDto, user);
 
-            var result = await _userManager.UpdateAsync(user).ConfigureAwait(false);
+            var result = await _userManager.UpdateAsync(updatedUser).ConfigureAwait(false);
             return result.Succeeded;
         }
         
