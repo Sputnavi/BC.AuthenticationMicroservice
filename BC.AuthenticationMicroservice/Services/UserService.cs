@@ -1,6 +1,7 @@
 ﻿using BC.AuthenticationMicroservice.Boundary.Request;
 using BC.AuthenticationMicroservice.Interfaces;
 using BC.AuthenticationMicroservice.Models;
+using BC.AuthenticationMicroservice.Repository;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -10,15 +11,18 @@ namespace BC.AuthenticationMicroservice.Services
     {
         private readonly UserManager<User> _userManager;
         private readonly RoleManager<Role> _roleManager;
+        private readonly ApplicationContext _context;
 
-        public UserService(UserManager<User> userManager, RoleManager<Role> roleManager)
+        public UserService(UserManager<User> userManager, RoleManager<Role> roleManager, ApplicationContext context)
         {
             _userManager = userManager;
+            _roleManager = roleManager;
+            _context = context;
         }
 
         public async Task<List<User>> GetUsersWithRolesAsync()
         {
-            return await _userManager.Users
+            return await _context.Users
                 .Include(x => x.UserRoles)
                     .ThenInclude(x => x.Role)
                 .AsNoTracking()
@@ -28,7 +32,7 @@ namespace BC.AuthenticationMicroservice.Services
         
         public User GetUserWithRoleById(string id)
         {
-            return _userManager.Users
+            return _context.Users
                 .Include(x => x.UserRoles)
                     .ThenInclude(x => x.Role)
                     .FirstOrDefault(u => u.Id == id);

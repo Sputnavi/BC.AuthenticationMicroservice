@@ -12,7 +12,6 @@ namespace BC.AuthenticationMicroservice.Repository
         public ApplicationContext(DbContextOptions<ApplicationContext> options)
             : base(options)
         {
-            Database.EnsureCreated();
         }
 
         protected override void OnModelCreating(ModelBuilder builder)
@@ -41,21 +40,21 @@ namespace BC.AuthenticationMicroservice.Repository
 
         private static void SeedData(ModelBuilder builder)
         {
-            IList<IdentityRole> roles = new List<IdentityRole>
+            IList<Role> roles = new List<Role>
             {
-                new IdentityRole
+                new Role
                 {
                     Id = "5E17EAB5-C0D7-45FE-AD03-774E657CEBF3",
                     Name = "Admin",
                     NormalizedName = "ADMIN"
                 },
-                new IdentityRole
+                new Role
                 {
                     Id = "A6BAD0EA-29F8-43A0-BB4B-B37077E16076",
                     Name = "Master",
                     NormalizedName = "MASTER"
                 },
-                new IdentityRole
+                new Role
                 {
                     Id = "DD3E7256-D5EA-49A7-A390-2E6EEF3DFEB3",
                     Name = "User",
@@ -63,29 +62,37 @@ namespace BC.AuthenticationMicroservice.Repository
                 },
             };
 
-            builder.Entity<IdentityRole>().HasData(roles);
+            builder.Entity<Role>().HasData(roles);
 
-            var adminUser = new User
+            SeedAnyUser(builder, "Admin", "5E17EAB5-C0D7-45FE-AD03-774E657CEBF3", "BB7EAB5-C0D7-45FE-AD03-774E657CEBF3");
+            SeedAnyUser(builder, "Master", "A6BAD0EA-29F8-43A0-BB4B-B37077E16076", "ABBAD0EA-29F8-43A0-BB4B-B37077E16076");
+            SeedAnyUser(builder, "User", "DD3E7256-D5EA-49A7-A390-2E6EEF3DFEB3", "BB3E7256-D5EA-49A7-A390-2E6EEF3DFEB3");
+        }
+
+        private static void SeedAnyUser(ModelBuilder builder, string role, string roleId, string userId)
+        {
+            var upperRole = role.ToUpper();
+            var user = new User
             {
-                Id = "5D5E025D-85FB-46DE-8FE4-6A7686981027",
-                Email = "admin@admin.com",
-                FirstName = "admin",
-                SecondName = "admin",
-                UserName = "admin",
-                NormalizedEmail = "ADMIN@ADMIN.COM",
-                NormalizedUserName = "ADMIN",
+                Id = userId,
+                Email = $"{role}@{role}.com",
+                FirstName = role,
+                SecondName = role,
+                UserName = role,
+                NormalizedEmail = $"{upperRole}@{upperRole}.COM",
+                NormalizedUserName = upperRole,
             };
 
             var passwordHasher = new PasswordHasher<User>();
-            adminUser.PasswordHash = passwordHasher.HashPassword(adminUser, "Admin123!");
+            user.PasswordHash = passwordHasher.HashPassword(user, $"{role}123!");
 
-            builder.Entity<User>().HasData(adminUser);
+            builder.Entity<User>().HasData(user);
 
-            builder.Entity<IdentityUserRole<string>>()
-                .HasData(new IdentityUserRole<string>()
+            builder.Entity<UserRole>()
+                .HasData(new UserRole()
                 {
-                    UserId = "5D5E025D-85FB-46DE-8FE4-6A7686981027",
-                    RoleId = "5E17EAB5-C0D7-45FE-AD03-774E657CEBF3"
+                    UserId = userId,
+                    RoleId = roleId,
                 });
         }
     }

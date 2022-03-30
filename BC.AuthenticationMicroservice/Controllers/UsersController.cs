@@ -12,10 +12,10 @@ namespace BC.AuthenticationMicroservice.Controllers
     [Route("api/admin/users")]
     public class UsersController : Controller
     {
-        private readonly UserService _userService;
+        private readonly IUserService _userService;
         private readonly ILoggerManager _logger;
 
-        public UsersController(UserService userService, ILoggerManager logger)
+        public UsersController(IUserService userService, ILoggerManager logger)
         {
             _userService = userService;
             _logger = logger;
