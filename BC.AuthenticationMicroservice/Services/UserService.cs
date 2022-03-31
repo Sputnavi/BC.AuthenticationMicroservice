@@ -49,6 +49,20 @@ namespace BC.AuthenticationMicroservice.Services
             var user = _mapper.Map<UserWithRole>(domainUser);
             return user;
         }
+        
+        public async Task<UserWithRole> GetCurrentUserWithRole(string name)
+        {
+            var user = await _userManager.FindByNameAsync(name)
+                .ConfigureAwait(false);
+
+            var domainUser = _context.Users
+                .Include(x => x.UserRoles)
+                    .ThenInclude(x => x.Role)
+                    .FirstOrDefault(u => u.Id == user.Id);
+            
+            var userWithRole = _mapper.Map<UserWithRole>(domainUser);
+            return userWithRole;
+        }
 
         public async Task<User> CreateUserAsync(RegisterRequest userDto)
         {
@@ -107,6 +121,21 @@ namespace BC.AuthenticationMicroservice.Services
 
             var roleList = await _userManager.GetRolesAsync(user).ConfigureAwait(false);
             return roleList.FirstOrDefault();
+        }
+
+        public async Task<bool> ChangeUserPasswordAsync(string userId, PasswordChangeDto passwordsDto)
+        {
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null)
+            {
+                return false;
+            }
+            if (!await _userManager.CheckPasswordAsync(user, passwordsDto.OldPassword))
+            {
+                return false;
+            }
+            var res = await _userManager.ChangePasswordAsync(user, passwordsDto.OldPassword, passwordsDto.NewPassword);
+            return res.Succeeded;
         }
 
         private async Task<bool> RoleExistsAsync(string role)

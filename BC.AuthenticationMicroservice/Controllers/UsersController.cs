@@ -87,23 +87,16 @@ namespace BC.AuthenticationMicroservice.Controllers
             return NoContent();
         }
 
-        //[HttpPut("{id}/password-change")]
-        //public async Task<IActionResult> ChangeUsersPassword(string id, PasswordChangeDto passwordsDto)
-        //{
-        //    var user = await _userService.FindByIdAsync(id);
-        //    if (user == null)
-        //    {
-        //        _logger.LogError($"User with id = {id} not found");
-        //        return NotFound();
-        //    }
-        //    if (!await _userService.CheckPasswordAsync(user, passwordsDto.OldPassword))
-        //    {
-        //        _logger.LogError("Wrong old password");
-        //        return BadRequest("Wrong old password");
-        //    }
-        //    var res = await _userService.ChangePasswordAsync(user, passwordsDto.OldPassword, passwordsDto.NewPassword);
-        //    return Ok(res);
-        //}
+        [HttpPut("{id}/password-change")]
+        public async Task<IActionResult> ChangeUsersPassword(string id, PasswordChangeDto passwordsDto)
+        {
+            var passwordChanged = await _userService.ChangeUserPasswordAsync(id, passwordsDto).ConfigureAwait(false);//ToDo K: how to handle returns?
+            if (!passwordChanged)
+            {
+                return StatusCode(500);
+            }
+            return NoContent();
+        }
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteUser(string id)//ToDo K: flag deleted, not delete?
@@ -116,18 +109,17 @@ namespace BC.AuthenticationMicroservice.Controllers
             return NoContent();
         }
 
-        //[HttpGet("account")]
-        //[Authorize()]
-        //public async Task<IActionResult> GetCurrentUser()
-        //{
-        //    var user = await _userManager.FindByNameAsync(User.Identity.Name);
+        [HttpGet("account")]
+        public async Task<IActionResult> GetCurrentUser()//ToDo K: need fix -> name is null
+        {
+            var user = await _userService.GetCurrentUserWithRole(User.Identity.Name);
 
-        //    if (user == null)
-        //    {
-        //        _logger.LogError($"Current User not found");
-        //        return NotFound();
-        //    }
-        //    return Ok(user);
-        //}
+            if (user == null)
+            {
+                _logger.LogError($"Current User not found");
+                return NotFound();
+            }
+            return Ok(user);
+        }
     }
 }
