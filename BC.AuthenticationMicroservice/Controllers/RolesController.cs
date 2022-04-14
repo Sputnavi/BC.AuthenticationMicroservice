@@ -20,12 +20,20 @@ namespace BC.AuthenticationMicroservice.Controllers
             _logger = logger;
         }
 
-        [HttpGet]//, Authorize(Roles = UserRoles.Admin)]
+        [HttpGet]
         public async Task<IActionResult> GetRoles()
         {
-            var roles = await _roleService.GetRolesAsync().ConfigureAwait(false);
+            var roles = await _roleService.GetRolesAsync();
 
             return Ok(roles);
-        }
+        } 
+        
+        [HttpGet("{roleName}/users")]
+        public async Task<IActionResult> GetUsersForRoles(string roleName)
+        {
+            var users = await _roleService.GetUsersForRoleAsync(roleName);
+
+            return Ok(users);
+        } 
     }
 }

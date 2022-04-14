@@ -4,6 +4,7 @@ using BC.AuthenticationMicroservice.Boundary.Response;
 using BC.AuthenticationMicroservice.CustomExceptions;
 using BC.AuthenticationMicroservice.Interfaces;
 using BC.AuthenticationMicroservice.Models;
+using BC.AuthenticationMicroservice.Models.Exceptions;
 using BC.AuthenticationMicroservice.Repository;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -32,8 +33,7 @@ namespace BC.AuthenticationMicroservice.Services
                 .Include(x => x.UserRoles)
                     .ThenInclude(x => x.Role)
                 .AsNoTracking()
-                .ToListAsync()
-                .ConfigureAwait(false);
+                .ToListAsync();
 
             var users = _mapper.Map<List<UserWithRole>>(domainUsers);
             return users;
@@ -52,8 +52,16 @@ namespace BC.AuthenticationMicroservice.Services
         
         public async Task<UserWithRole> GetCurrentUserWithRole(string name)
         {
-            var user = await _userManager.FindByNameAsync(name)
-                .ConfigureAwait(false);
+            if (string.IsNullOrEmpty(name))
+            {
+                throw new ArgumentNullException(nameof(name));
+            }
+
+            var user = await _userManager.FindByNameAsync(name);
+            if (user == null)
+            {
+                throw new EntityNotFoundException(nameof(User), name);
+            }
 
             var domainUser = _context.Users
                 .Include(x => x.UserRoles)
@@ -66,48 +74,55 @@ namespace BC.AuthenticationMicroservice.Services
 
         public async Task<User> CreateUserAsync(RegisterRequest userDto)
         {
-            var roleExists = await RoleExistsAsync(userDto.Role).ConfigureAwait(false); 
+            if (userDto == null || userDto.Role == null)
+            {
+                throw new ArgumentNullException(nameof(userDto));
+            }
+
+            var roleExists = await RoleExistsAsync(userDto.Role); 
             if (!roleExists)
             {
-                throw new Exception("Role doesn't exist");
+                throw new EntityNotFoundException(nameof(Role), userDto.Role);
             }
             var user = _mapper.Map<User>(userDto);
 
-            var userResult = await _userManager.CreateAsync(user, userDto.Password).ConfigureAwait(false);
+            var userResult = await _userManager.CreateAsync(user, userDto.Password);
             if (!userResult.Succeeded)
             {
                 throw new UserCreationException(userResult.Errors);
             }
             
-            var roleResult = await _userManager.AddToRoleAsync(user, userDto.Role).ConfigureAwait(false);
+            await _userManager.AddToRoleAsync(user, userDto.Role);
             return user;
         }
 
-        public async Task<bool> UpdateUserAsync(string id, UserUpdateDto userDto)
+        public async Task UpdateUserAsync(string id, UserUpdateDto userDto)
         {
-            var user = await _userManager.FindByIdAsync(id).ConfigureAwait(false);
+            var user = await _userManager.FindByIdAsync(id);
             if (user == null)
             {
-                return false;
+                throw new EntityNotFoundException(nameof(user), id);
             }
 
             var updatedUser = _mapper.Map(userDto, user);
 
-            var result = await _userManager.UpdateAsync(updatedUser).ConfigureAwait(false);
-            return result.Succeeded;
+            await _userManager.UpdateAsync(updatedUser);
         }
         
-        public async Task<bool> DeleteUserAsync(string id)
+        public async Task DeleteUserAsync(string id)
         {
-            var user = await _userManager.FindByIdAsync(id).ConfigureAwait(false);
+            if (string.IsNullOrEmpty(id))
+            {
+                throw new ArgumentNullException(nameof(id));
+            }
+            var user = await _userManager.FindByIdAsync(id);
 
             if (user == null)
             {
-                return false;
+                throw new EntityNotFoundException(nameof(User), id);
             }
 
-            var result = await _userManager.DeleteAsync(user).ConfigureAwait(false);
-            return result.Succeeded; 
+            await _userManager.DeleteAsync(user);
         }
 
         public async Task<string> GetUserRoleAsync(string userId)
@@ -119,7 +134,7 @@ namespace BC.AuthenticationMicroservice.Services
                 return null;
             }
 
-            var roleList = await _userManager.GetRolesAsync(user).ConfigureAwait(false);
+            var roleList = await _userManager.GetRolesAsync(user);
             return roleList.FirstOrDefault();
         }
 
@@ -140,7 +155,7 @@ namespace BC.AuthenticationMicroservice.Services
 
         private async Task<bool> RoleExistsAsync(string role)
         {
-            return await _roleManager.RoleExistsAsync(role).ConfigureAwait(false);
+            return await _roleManager.RoleExistsAsync(role);
         }
 
     }

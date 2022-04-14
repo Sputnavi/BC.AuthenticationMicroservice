@@ -22,10 +22,10 @@ namespace BC.AuthenticationMicroservice.Controllers
             _logger = logger;
         }
 
-        [HttpGet]//, Authorize(Roles = UserRoles.Admin)]
+        [HttpGet, Authorize(Roles = UserRoles.Admin)]
         public async Task<IActionResult> GetUsers()
         {
-            var users = await _userService.GetUsersWithRolesAsync().ConfigureAwait(false);
+            var users = await _userService.GetUsersWithRolesAsync();
             
             return Ok(users);
         }
@@ -51,22 +51,8 @@ namespace BC.AuthenticationMicroservice.Controllers
                 _logger.LogWarn("UserDto can't be null");
                 return BadRequest();
             }
-            User createdUser = null;
-            try
-            {
-                createdUser = await _userService.CreateUserAsync(userDto).ConfigureAwait(false);
-            }
-            catch (UserCreationException ucex)
-            {
-                _logger.LogError(ucex.Message);
-                return BadRequest(ucex.Message);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex.Message);
-                return StatusCode(500);
-            }
-
+            User createdUser = createdUser = await _userService.CreateUserAsync(userDto);
+            
             return new ObjectResult(createdUser) { StatusCode = StatusCodes.Status201Created };
         }
 
@@ -79,18 +65,15 @@ namespace BC.AuthenticationMicroservice.Controllers
                 return BadRequest();
             }
 
-            var updated = await _userService.UpdateUserAsync(id, userDto).ConfigureAwait(false);
-            if (!updated)
-            {
-                return StatusCode(500);
-            }
+            await _userService.UpdateUserAsync(id, userDto);
+           
             return NoContent();
         }
 
         [HttpPut("{id}/password-change")]
         public async Task<IActionResult> ChangeUsersPassword(string id, PasswordChangeDto passwordsDto)
         {
-            var passwordChanged = await _userService.ChangeUserPasswordAsync(id, passwordsDto).ConfigureAwait(false);//ToDo K: how to handle returns?
+            var passwordChanged = await _userService.ChangeUserPasswordAsync(id, passwordsDto);//ToDo K: how to handle returns?
             if (!passwordChanged)
             {
                 return StatusCode(500);
@@ -99,26 +82,26 @@ namespace BC.AuthenticationMicroservice.Controllers
         }
 
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteUser(string id)//ToDo K: flag deleted, not delete?
+        public async Task<IActionResult> DeleteUser(string id)
         {
-            var deleted = await _userService.DeleteUserAsync(id).ConfigureAwait(false);
-            if (!deleted)
-            {
-                return StatusCode(500);
-            }
+            await _userService.DeleteUserAsync(id);
+            
             return NoContent();
         }
 
         [HttpGet("account")]
-        public async Task<IActionResult> GetCurrentUser()//ToDo K: need fix -> name is null
+        public async Task<IActionResult> GetCurrentUser()
         {
+            if (!User.Identity.IsAuthenticated)
+            {
+                return Unauthorized();
+            }
+            if (User?.Identity?.Name == null)
+            {
+                return BadRequest("Name cannot be null");
+            }
             var user = await _userService.GetCurrentUserWithRole(User.Identity.Name);
 
-            if (user == null)
-            {
-                _logger.LogError($"Current User not found");
-                return NotFound();
-            }
             return Ok(user);
         }
     }

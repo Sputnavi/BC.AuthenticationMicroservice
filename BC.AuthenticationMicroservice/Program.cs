@@ -13,11 +13,15 @@ LogManager.LoadConfiguration(string.Concat(Directory.GetCurrentDirectory(), "/nl
 // Add services to the container.
 builder.Services.AddDbContext<ApplicationContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
-builder.Services.AddIdentity<User, Role>()
-    .AddEntityFrameworkStores<ApplicationContext>();
+
+var configuration = builder.Configuration;
+builder.Services.AddAuthentication();
+builder.Services.ConfigureIdentity();
+builder.Services.ConfigureJWT(configuration);
+builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
+
 
 builder.Services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
-builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
 builder.Services.AddSingleton<ILoggerManager, LoggerManager>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IRoleService, RoleService>();
@@ -27,11 +31,11 @@ builder.Services.ConfigureCors();
 builder.Services.AddControllers().AddNewtonsoftJson(options =>
     options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore
 );
-;
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(); 
 var app = builder.Build();
 
+app.UseMiddleware<ExceptionMiddleware>();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {

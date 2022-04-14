@@ -10,8 +10,8 @@ namespace BC.AuthenticationMicroservice.Interfaces
         UserWithRole GetUserWithRoleById(string id);
         Task<UserWithRole> GetCurrentUserWithRole(string name);
         Task<User> CreateUserAsync(RegisterRequest userDto);
-        Task<bool> UpdateUserAsync(string id, UserUpdateDto userDto);
-        Task<bool> DeleteUserAsync(string id);
+        Task UpdateUserAsync(string id, UserUpdateDto userDto);
+        Task DeleteUserAsync(string id);
         Task<string> GetUserRoleAsync(string userId);
         Task<bool> ChangeUserPasswordAsync(string userId, PasswordChangeDto passwordsDto);
     }
