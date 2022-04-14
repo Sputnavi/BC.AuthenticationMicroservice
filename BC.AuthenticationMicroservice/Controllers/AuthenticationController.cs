@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using BC.AuthenticationMicroservice.Interfaces;
 using BC.AuthenticationMicroservice.Services;
+using BC.AuthenticationMicroservice.Boundary.Response;
 
 namespace BC.AuthenticationMicroservice.Controllers
 {
@@ -28,7 +29,7 @@ namespace BC.AuthenticationMicroservice.Controllers
         }
 
         [HttpPost("login")]
-        public async Task<IActionResult> Login(LoginRequest request)
+        public async Task<IActionResult> LoginAsync(LoginRequest request)
         {
             User user = await _authenticationService.AuthenticateAsync(request);
             if (user is null)
@@ -39,17 +40,17 @@ namespace BC.AuthenticationMicroservice.Controllers
             string token = await _jwtTokenGenerator.GenerateTokenAsync(user);
             IConfigurationSection jwtSettings = _configuration.GetSection("JwtSettings");
 
-            var response = new
+            var response = new LoginResponse
             {
-                token = token,
-                minutesToExpire = Convert.ToDouble(jwtSettings["minutesToExpire"]),
-                role = await _userService.GetUserRoleAsync(user.Id)
+                Token = token,
+                MinutesToExpire = Convert.ToDouble(jwtSettings["minutesToExpire"]),
+                Role = await _userService.GetUserRoleAsync(user.Id)
             };
             return Ok(response);
         }
 
         [HttpPost("register")]
-        public async Task<IActionResult> Register(RegisterRequest request)
+        public async Task<IActionResult> RegisterAsync(RegisterRequest request)
         {
             var user = new User()
             {

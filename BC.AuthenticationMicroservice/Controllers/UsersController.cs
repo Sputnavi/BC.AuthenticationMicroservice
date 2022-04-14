@@ -22,7 +22,8 @@ namespace BC.AuthenticationMicroservice.Controllers
             _logger = logger;
         }
 
-        [HttpGet, Authorize(Roles = UserRoles.Admin)]
+        [HttpGet]
+        [Authorize(Roles=UserRoles.Admin)]
         public async Task<IActionResult> GetUsers()
         {
             var users = await _userService.GetUsersWithRolesAsync();
