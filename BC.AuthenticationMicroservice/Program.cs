@@ -1,6 +1,5 @@
 using BC.AuthenticationMicroservice.Extensions;
 using BC.AuthenticationMicroservice.Interfaces;
-using BC.AuthenticationMicroservice.Models;
 using BC.AuthenticationMicroservice.Profiles;
 using BC.AuthenticationMicroservice.Repository;
 using BC.AuthenticationMicroservice.Services;
@@ -32,7 +31,7 @@ builder.Services.AddControllers().AddNewtonsoftJson(options =>
     options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore
 );
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen(); 
+builder.Services.AddSwaggerGen();
 var app = builder.Build();
 
 app.UseMiddleware<ExceptionMiddleware>();

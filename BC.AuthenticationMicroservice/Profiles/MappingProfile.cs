@@ -10,10 +10,10 @@ namespace BC.AuthenticationMicroservice.Profiles
         public MappingProfile()
         {
             CreateMap<User, UserWithRole>()
-                .ForMember(dest => 
+                .ForMember(dest =>
                     dest.Role,
                     opt => opt.MapFrom(src => src.UserRoles.FirstOrDefault().Role.Name));
-            
+
             CreateMap<RegisterRequest, User>()
                 .ForMember(dest =>
                     dest.UserName,

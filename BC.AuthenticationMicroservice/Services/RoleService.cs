@@ -31,7 +31,7 @@ namespace BC.AuthenticationMicroservice.Services
             var roles = _mapper.Map<List<GetRole>>(domainRoles);
             return roles;
         }
-        
+
         public async Task<List<UserDto>> GetUsersForRoleAsync(string roleName)
         {
             if (string.IsNullOrEmpty(roleName))

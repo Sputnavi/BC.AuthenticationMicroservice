@@ -38,18 +38,18 @@ namespace BC.AuthenticationMicroservice.Services
             var users = _mapper.Map<List<UserWithRole>>(domainUsers);
             return users;
         }
-        
+
         public UserWithRole GetUserWithRoleById(string id)
         {
             var domainUser = _context.Users
                 .Include(x => x.UserRoles)
                     .ThenInclude(x => x.Role)
                     .FirstOrDefault(u => u.Id == id);
-            
+
             var user = _mapper.Map<UserWithRole>(domainUser);
             return user;
         }
-        
+
         public async Task<UserWithRole> GetCurrentUserWithRole(string name)
         {
             if (string.IsNullOrEmpty(name))
@@ -67,7 +67,7 @@ namespace BC.AuthenticationMicroservice.Services
                 .Include(x => x.UserRoles)
                     .ThenInclude(x => x.Role)
                     .FirstOrDefault(u => u.Id == user.Id);
-            
+
             var userWithRole = _mapper.Map<UserWithRole>(domainUser);
             return userWithRole;
         }
@@ -79,7 +79,7 @@ namespace BC.AuthenticationMicroservice.Services
                 throw new ArgumentNullException(nameof(userDto));
             }
 
-            var roleExists = await RoleExistsAsync(userDto.Role); 
+            var roleExists = await RoleExistsAsync(userDto.Role);
             if (!roleExists)
             {
                 throw new EntityNotFoundException(nameof(Role), userDto.Role);
@@ -91,7 +91,7 @@ namespace BC.AuthenticationMicroservice.Services
             {
                 throw new UserCreationException(userResult.Errors);
             }
-            
+
             await _userManager.AddToRoleAsync(user, userDto.Role);
             return user;
         }
@@ -108,7 +108,7 @@ namespace BC.AuthenticationMicroservice.Services
 
             await _userManager.UpdateAsync(updatedUser);
         }
-        
+
         public async Task DeleteUserAsync(string id)
         {
             if (string.IsNullOrEmpty(id))

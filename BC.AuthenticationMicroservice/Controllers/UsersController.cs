@@ -1,14 +1,11 @@
 ﻿using BC.AuthenticationMicroservice.Boundary.Request;
-using BC.AuthenticationMicroservice.CustomExceptions;
 using BC.AuthenticationMicroservice.Interfaces;
 using BC.AuthenticationMicroservice.Models;
-using BC.AuthenticationMicroservice.Services;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BC.AuthenticationMicroservice.Controllers
 {
-    //ToDo:  add auth
+    //ToDo: add auth
     [ApiController]
     [Route("api/admin/users")]
     public class UsersController : Controller
@@ -23,15 +20,14 @@ namespace BC.AuthenticationMicroservice.Controllers
         }
 
         [HttpGet]
-        [Authorize(Roles=UserRoles.Admin)]
         public async Task<IActionResult> GetUsers()
         {
             var users = await _userService.GetUsersWithRolesAsync();
-            
+
             return Ok(users);
         }
 
-        [HttpGet("{id}")]//, Authorize(Roles = UserRoles.Admin)]//ToDo K: add authorize roles
+        [HttpGet("{id}")]
         public IActionResult GetUserById(string id)
         {
             var user = _userService.GetUserWithRoleById(id);
@@ -44,16 +40,16 @@ namespace BC.AuthenticationMicroservice.Controllers
             return Ok(user);
         }
 
-        [HttpPost]//, Authorize(Roles = UserRoles.Admin)]
-        public async Task<IActionResult> CreateUser(RegisterRequest userDto)//ToDo K: repeated logic
+        [HttpPost]
+        public async Task<IActionResult> CreateUser(RegisterRequest userDto)
         {
             if (userDto == null)
             {
                 _logger.LogWarn("UserDto can't be null");
                 return BadRequest();
             }
-            User createdUser = createdUser = await _userService.CreateUserAsync(userDto);
-            
+            User createdUser = await _userService.CreateUserAsync(userDto);
+
             return new ObjectResult(createdUser) { StatusCode = StatusCodes.Status201Created };
         }
 
@@ -67,14 +63,14 @@ namespace BC.AuthenticationMicroservice.Controllers
             }
 
             await _userService.UpdateUserAsync(id, userDto);
-           
+
             return NoContent();
         }
 
         [HttpPut("{id}/password-change")]
         public async Task<IActionResult> ChangeUsersPassword(string id, PasswordChangeDto passwordsDto)
         {
-            var passwordChanged = await _userService.ChangeUserPasswordAsync(id, passwordsDto);//ToDo K: how to handle returns?
+            var passwordChanged = await _userService.ChangeUserPasswordAsync(id, passwordsDto);
             if (!passwordChanged)
             {
                 return StatusCode(500);
@@ -86,7 +82,7 @@ namespace BC.AuthenticationMicroservice.Controllers
         public async Task<IActionResult> DeleteUser(string id)
         {
             await _userService.DeleteUserAsync(id);
-            
+
             return NoContent();
         }
 

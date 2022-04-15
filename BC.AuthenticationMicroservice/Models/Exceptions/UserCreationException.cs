@@ -14,7 +14,7 @@ namespace BC.AuthenticationMicroservice.CustomExceptions
         {
             IdentityErrors = identityErrors;
         }
-    } 
+    }
 
-  
+
 }

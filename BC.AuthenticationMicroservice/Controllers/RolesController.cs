@@ -1,8 +1,4 @@
-﻿using BC.AuthenticationMicroservice.Boundary.Request;
-using BC.AuthenticationMicroservice.Interfaces;
-using BC.AuthenticationMicroservice.Models;
-using BC.AuthenticationMicroservice.Services;
-using Microsoft.AspNetCore.Authorization;
+﻿using BC.AuthenticationMicroservice.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BC.AuthenticationMicroservice.Controllers
@@ -26,14 +22,18 @@ namespace BC.AuthenticationMicroservice.Controllers
             var roles = await _roleService.GetRolesAsync();
 
             return Ok(roles);
-        } 
-        
+        }
+
         [HttpGet("{roleName}/users")]
         public async Task<IActionResult> GetUsersForRoles(string roleName)
         {
+            if (roleName == null)
+            {
+                return BadRequest("Role name can't be empty");
+            }
             var users = await _roleService.GetUsersForRoleAsync(roleName);
 
             return Ok(users);
-        } 
+        }
     }
 }

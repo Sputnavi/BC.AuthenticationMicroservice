@@ -36,7 +36,7 @@ namespace BC.AuthenticationMicroservice.Repository
 
             SeedData(builder);
         }
-      
+
 
         private static void SeedData(ModelBuilder builder)
         {

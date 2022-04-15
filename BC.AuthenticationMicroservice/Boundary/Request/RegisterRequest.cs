@@ -22,7 +22,7 @@ namespace BC.AuthenticationMicroservice.Boundary.Request
         [DataType(DataType.Password)]
         public string PasswordConfirm { get; set; }
 
-        [Required]//ToDo k: add constraint to add only existring roles
+        [Required]
         public string Role { get; set; }
     }
 }

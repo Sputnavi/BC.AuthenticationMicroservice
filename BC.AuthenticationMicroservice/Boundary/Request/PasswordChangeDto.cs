@@ -6,7 +6,7 @@ namespace BC.AuthenticationMicroservice.Boundary.Request
     {
         [Required]
         public string OldPassword { get; set; }
-        
+
         [Required]
         public string NewPassword { get; set; }
     }

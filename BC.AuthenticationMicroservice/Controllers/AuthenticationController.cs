@@ -1,10 +1,9 @@
-using BC.AuthenticationMicroservice.Models;
 using BC.AuthenticationMicroservice.Boundary.Request;
+using BC.AuthenticationMicroservice.Boundary.Response;
+using BC.AuthenticationMicroservice.Interfaces;
+using BC.AuthenticationMicroservice.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using BC.AuthenticationMicroservice.Interfaces;
-using BC.AuthenticationMicroservice.Services;
-using BC.AuthenticationMicroservice.Boundary.Response;
 
 namespace BC.AuthenticationMicroservice.Controllers
 {
@@ -18,7 +17,7 @@ namespace BC.AuthenticationMicroservice.Controllers
         private readonly IConfiguration _configuration;
         private readonly IUserService _userService;
 
-        public AuthenticationController(UserManager<User> userManager, IAuthenticationService authenticationService, IJwtTokenGenerator jwtTokenGenerator, 
+        public AuthenticationController(UserManager<User> userManager, IAuthenticationService authenticationService, IJwtTokenGenerator jwtTokenGenerator,
             IConfiguration configuration, IUserService userService)
         {
             _userManager = userManager;
