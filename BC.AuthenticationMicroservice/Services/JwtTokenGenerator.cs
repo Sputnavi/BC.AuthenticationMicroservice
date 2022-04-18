@@ -40,7 +40,9 @@ namespace BC.AuthenticationMicroservice.Services
             foreach (var role in roles)
             {
                 var claim = new Claim("Role", role);
+                var claim2 = new Claim(ClaimTypes.Role, role);
                 claims.Add(claim);
+                claims.Add(claim2);
             }
 
             return claims;

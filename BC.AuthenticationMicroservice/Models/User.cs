@@ -10,5 +10,7 @@ namespace BC.AuthenticationMicroservice.Models
 
         [Required]
         public string SecondName { get; set; }
+
+        public virtual ICollection<UserRole> UserRoles { get; set; }
     }
 }
