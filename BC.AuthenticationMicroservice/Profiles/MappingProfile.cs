@@ -22,6 +22,7 @@ namespace BC.AuthenticationMicroservice.Profiles
             CreateMap<UserUpdateDto, User>();
             CreateMap<User, UserDto>();
             CreateMap<Role, GetRole>();
+            CreateMap<UserRegisterRequest, RegisterRequest>();
         }
     }
 }

@@ -1,3 +1,4 @@
+using AutoMapper;
 using BC.AuthenticationMicroservice.Boundary.Request;
 using BC.AuthenticationMicroservice.Boundary.Response;
 using BC.AuthenticationMicroservice.Interfaces;
@@ -11,20 +12,22 @@ namespace BC.AuthenticationMicroservice.Controllers
     [Route("api/[controller]")]
     public class AuthenticationController : ControllerBase
     {
-        private readonly UserManager<User> _userManager;
         private readonly IAuthenticationService _authenticationService;
         private readonly IJwtTokenGenerator _jwtTokenGenerator;
         private readonly IConfiguration _configuration;
         private readonly IUserService _userService;
+        private readonly IMapper _mapper;
+        private readonly ILoggerManager _logger;
 
-        public AuthenticationController(UserManager<User> userManager, IAuthenticationService authenticationService, IJwtTokenGenerator jwtTokenGenerator,
-            IConfiguration configuration, IUserService userService)
+        public AuthenticationController(IAuthenticationService authenticationService, IJwtTokenGenerator jwtTokenGenerator,
+            IConfiguration configuration, IUserService userService, IMapper mapper, ILoggerManager logger)
         {
-            _userManager = userManager;
             _authenticationService = authenticationService;
             _jwtTokenGenerator = jwtTokenGenerator;
             _configuration = configuration;
             _userService = userService;
+            _mapper = mapper;
+            _logger = logger;
         }
 
         [HttpPost("login")]
@@ -49,24 +52,20 @@ namespace BC.AuthenticationMicroservice.Controllers
         }
 
         [HttpPost("register")]
-        public async Task<IActionResult> RegisterAsync(RegisterRequest request)
+        public async Task<IActionResult> RegisterAsync(UserRegisterRequest userRequest)
         {
-            var user = new User()
+            if (userRequest == null)
             {
-                Email = request.Email,
-                UserName = $"{request.FirstName}_{request.SecondName}",
-                FirstName = request.FirstName,
-                SecondName = request.SecondName
-            };
-
-            IdentityResult result = await _userManager.CreateAsync(user, request.Password);
-
-            if (!result.Succeeded)
-            {
-                return BadRequest(string.Join(", ", result.Errors.Select(x => x.Description)));
+                _logger.LogWarn("User Request can't be null");
+                return BadRequest();
             }
+            var request = _mapper.Map<RegisterRequest>(userRequest);
+            request.Role = UserRoles.User;
 
-            return Ok();
+            User createdUser = await _userService.CreateUserAsync(request);
+
+            return new ObjectResult(createdUser) { StatusCode = StatusCodes.Status201Created };
+
         }
     }
 }
