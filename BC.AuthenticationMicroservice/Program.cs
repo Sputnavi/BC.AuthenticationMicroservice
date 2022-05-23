@@ -3,6 +3,7 @@ using BC.AuthenticationMicroservice.Interfaces;
 using BC.AuthenticationMicroservice.Profiles;
 using BC.AuthenticationMicroservice.Repository;
 using BC.AuthenticationMicroservice.Services;
+using MassTransit;
 using Microsoft.EntityFrameworkCore;
 using NLog;
 
@@ -10,28 +11,41 @@ var builder = WebApplication.CreateBuilder(args);
 
 LogManager.LoadConfiguration(string.Concat(Directory.GetCurrentDirectory(), "/nlog.config"));
 // Add services to the container.
-builder.Services.AddDbContext<ApplicationContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
-
 var configuration = builder.Configuration;
-builder.Services.AddAuthentication();
-builder.Services.ConfigureIdentity();
-builder.Services.ConfigureJWT(configuration);
-builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
+var services = builder.Services;
 
+services.AddDbContext<ApplicationContext>(options =>
+    options.UseSqlServer(configuration.GetConnectionString("DefaultConnection")));
 
-builder.Services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
-builder.Services.AddSingleton<ILoggerManager, LoggerManager>();
-builder.Services.AddScoped<IUserService, UserService>();
-builder.Services.AddScoped<IRoleService, RoleService>();
-builder.Services.AddAutoMapper(typeof(MappingProfile));
-builder.Services.ConfigureCors();
+services.AddAuthentication();
+services.ConfigureIdentity();
+services.ConfigureJWT(configuration);
+services.AddScoped<IAuthenticationService, AuthenticationService>();
 
-builder.Services.AddControllers().AddNewtonsoftJson(options =>
+services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
+services.AddSingleton<ILoggerManager, LoggerManager>();
+services.AddScoped<IUserService, UserService>();
+services.AddScoped<IRoleService, RoleService>();
+services.AddAutoMapper(typeof(MappingProfile));
+services.ConfigureCors();
+services.AddMassTransit(x =>
+    x.UsingRabbitMq((context, config) =>
+    {
+        config.Host("localhost", "/", h =>
+        {
+            h.Username("guest");
+            h.Password("guest");
+        });
+
+        config.ConfigureEndpoints(context);
+    })
+);
+
+services.AddControllers().AddNewtonsoftJson(options =>
     options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore
 );
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+services.AddEndpointsApiExplorer();
+services.AddSwaggerGen();
 var app = builder.Build();
 
 app.UseMiddleware<ExceptionMiddleware>();

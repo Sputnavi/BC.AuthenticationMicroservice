@@ -6,6 +6,8 @@ using BC.AuthenticationMicroservice.Interfaces;
 using BC.AuthenticationMicroservice.Models;
 using BC.AuthenticationMicroservice.Models.Exceptions;
 using BC.AuthenticationMicroservice.Repository;
+using BC.Messages;
+using MassTransit;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -17,14 +19,16 @@ namespace BC.AuthenticationMicroservice.Services
         private readonly RoleManager<Role> _roleManager;
         private readonly ApplicationContext _context;
         private readonly IMapper _mapper;
+        private readonly IPublishEndpoint _publishEndpoint;
 
         public UserService(UserManager<User> userManager, RoleManager<Role> roleManager, ApplicationContext context,
-            IMapper mapper)
+            IMapper mapper, IPublishEndpoint publishEndpoint)
         {
             _userManager = userManager;
             _roleManager = roleManager;
             _context = context;
             _mapper = mapper;
+            _publishEndpoint = publishEndpoint;
         }
 
         public async Task<List<UserWithRole>> GetUsersWithRolesAsync()
@@ -36,6 +40,10 @@ namespace BC.AuthenticationMicroservice.Services
                 .ToListAsync();
 
             var users = _mapper.Map<List<UserWithRole>>(domainUsers);
+
+            var message = _mapper.Map<UserUpdated>(users.FirstOrDefault());
+            await _publishEndpoint.Publish(message);
+
             return users;
         }
 
@@ -107,6 +115,9 @@ namespace BC.AuthenticationMicroservice.Services
             var updatedUser = _mapper.Map(userDto, user);
 
             await _userManager.UpdateAsync(updatedUser);
+
+            var message = _mapper.Map<UserUpdated>(updatedUser);
+            await _publishEndpoint.Publish(message);
         }
 
         public async Task DeleteUserAsync(string id)

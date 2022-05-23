@@ -2,6 +2,7 @@
 using BC.AuthenticationMicroservice.Boundary.Request;
 using BC.AuthenticationMicroservice.Boundary.Response;
 using BC.AuthenticationMicroservice.Models;
+using BC.Messages;
 
 namespace BC.AuthenticationMicroservice.Profiles
 {
@@ -23,6 +24,9 @@ namespace BC.AuthenticationMicroservice.Profiles
             CreateMap<User, UserDto>();
             CreateMap<Role, GetRole>();
             CreateMap<UserRegisterRequest, RegisterRequest>();
+
+            CreateMap<User, UserUpdated>();
+            CreateMap<UserWithRole, UserUpdated>();
         }
     }
 }
