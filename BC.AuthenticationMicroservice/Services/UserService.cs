@@ -6,7 +6,7 @@ using BC.AuthenticationMicroservice.Interfaces;
 using BC.AuthenticationMicroservice.Models;
 using BC.AuthenticationMicroservice.Models.Exceptions;
 using BC.AuthenticationMicroservice.Repository;
-using BC.Messages;
+using BC.Messaging;
 using MassTransit;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -40,9 +40,6 @@ namespace BC.AuthenticationMicroservice.Services
                 .ToListAsync();
 
             var users = _mapper.Map<List<UserWithRole>>(domainUsers);
-
-            var message = _mapper.Map<UserUpdated>(users.FirstOrDefault());
-            await _publishEndpoint.Publish(message);
 
             return users;
         }
@@ -134,6 +131,9 @@ namespace BC.AuthenticationMicroservice.Services
             }
 
             await _userManager.DeleteAsync(user);
+
+            var message = _mapper.Map<UserDeleted>(user);
+            await _publishEndpoint.Publish(message);
         }
 
         public async Task<string> GetUserRoleAsync(string userId)
