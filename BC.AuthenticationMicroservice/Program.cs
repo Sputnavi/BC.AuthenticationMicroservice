@@ -3,7 +3,6 @@ using BC.AuthenticationMicroservice.Interfaces;
 using BC.AuthenticationMicroservice.Profiles;
 using BC.AuthenticationMicroservice.Repository;
 using BC.AuthenticationMicroservice.Services;
-using MassTransit;
 using Microsoft.EntityFrameworkCore;
 using NLog;
 
@@ -28,18 +27,7 @@ services.AddScoped<IUserService, UserService>();
 services.AddScoped<IRoleService, RoleService>();
 services.AddAutoMapper(typeof(MappingProfile));
 services.ConfigureCors();
-services.AddMassTransit(x =>
-    x.UsingRabbitMq((context, config) =>
-    {
-        config.Host("localhost", "/", h =>
-        {
-            h.Username("guest");
-            h.Password("guest");
-        });
-
-        config.ConfigureEndpoints(context);
-    })
-);
+services.AddBCMessaging(configuration, builder.Environment.IsDevelopment());
 
 services.AddControllers().AddNewtonsoftJson(options =>
     options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore
