@@ -1,5 +1,6 @@
 ﻿using BC.AuthenticationMicroservice.Models;
 using BC.AuthenticationMicroservice.Repository;
+using MassTransit;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
@@ -17,6 +18,40 @@ namespace BC.AuthenticationMicroservice.Extensions
                     builder.AllowAnyOrigin()
                     .AllowAnyMethod()
                     .AllowAnyHeader());
+            });
+        }
+
+        public static void AddBCMessaging(this IServiceCollection services, IConfiguration configuration, bool isDevelopment)
+        {
+            if (isDevelopment)
+            {
+                var rabbitMqSection = configuration.GetSection("RabbitMQ");
+
+                services.AddMassTransit(x =>
+                {
+                    x.UsingRabbitMq((context, config) =>
+                    {
+                        config.Host(rabbitMqSection["host"], rabbitMqSection["virtualHost"], h =>
+                        {
+                            h.Username(rabbitMqSection["username"]);
+                            h.Password(rabbitMqSection["password"]);
+                        });
+
+                        config.ConfigureEndpoints(context);
+                    });
+                });
+
+                return;
+            }
+
+            services.AddMassTransit(x =>
+            {
+                x.UsingAzureServiceBus((context, config) =>
+                {
+                    config.Host(configuration.GetConnectionString("AzureServiceBusConnection"));
+
+                    config.ConfigureEndpoints(context);
+                });
             });
         }
 
