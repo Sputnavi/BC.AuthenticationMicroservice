@@ -73,7 +73,7 @@ namespace BC.AuthenticationMicroservice.Controllers
             var passwordChanged = await _userService.ChangeUserPasswordAsync(id, passwordsDto);
             if (!passwordChanged)
             {
-                return StatusCode(500);
+                return BadRequest();
             }
             return NoContent();
         }
