@@ -33,15 +33,16 @@ services.AddControllers().AddNewtonsoftJson(options =>
     options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore
 );
 services.AddEndpointsApiExplorer();
-services.AddSwaggerGen();
+services.ConfigureSwagger();
 var app = builder.Build();
 
 app.UseMiddleware<ExceptionMiddleware>();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
+    app.UseSwagger(); 
+    app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "BC.AuthenticationMicroservice.API v1"));
+
 }
 
 app.UseHttpsRedirection();

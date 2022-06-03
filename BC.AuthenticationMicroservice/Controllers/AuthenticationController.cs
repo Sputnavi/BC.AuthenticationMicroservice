@@ -30,7 +30,17 @@ namespace BC.AuthenticationMicroservice.Controllers
             _logger = logger;
         }
 
-        [HttpPost("login")]
+        /// <summary>
+        /// Login to system.
+        /// </summary>
+        /// <param name="request">Email and password.</param>
+        /// <response code="200">Successfully login.</response> 
+        /// <response code="401">You need to authorize first</response>
+        /// <response code="500">Internal Server Error</response>
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(LoginResponse))]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [HttpPost("login", Name = "login")]
         public async Task<IActionResult> LoginAsync(LoginRequest request)
         {
             User user = await _authenticationService.AuthenticateAsync(request);
@@ -51,7 +61,17 @@ namespace BC.AuthenticationMicroservice.Controllers
             return Ok(response);
         }
 
-        [HttpPost("register")]
+        /// <summary>
+        ///  User registration in system.
+        /// </summary>
+        /// <param name="request">User data for registration.</param>
+        /// <response code="201">New user registered successfully.</response> 
+        /// <response code="401">You need to authorize first</response>
+        /// <response code="500">Internal Server Error</response>
+        [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(ObjectResult))]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [HttpPost("register", Name = "register")]
         public async Task<IActionResult> RegisterAsync(UserRegisterRequest userRequest)
         {
             if (userRequest == null)
