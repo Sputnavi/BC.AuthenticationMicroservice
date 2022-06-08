@@ -26,7 +26,7 @@ services.AddSingleton<ILoggerManager, LoggerManager>();
 services.AddScoped<IUserService, UserService>();
 services.AddScoped<IRoleService, RoleService>();
 services.AddAutoMapper(typeof(MappingProfile));
-services.ConfigureCors(configuration);
+services.ConfigureCorsPolicy(configuration);
 services.AddBCMessaging(configuration, builder.Environment.IsDevelopment());
 
 services.AddControllers().AddNewtonsoftJson(options =>

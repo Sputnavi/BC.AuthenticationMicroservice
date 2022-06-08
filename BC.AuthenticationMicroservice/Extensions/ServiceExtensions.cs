@@ -10,7 +10,7 @@ namespace BC.AuthenticationMicroservice.Extensions
 {
     public static class ServiceExtensions
     {
-        public static void ConfigureCors(this IServiceCollection services, IConfiguration configuration)
+        public static void ConfigureCorsPolicy(this IServiceCollection services, IConfiguration configuration)
         {
             var corsSection = configuration.GetSection("CORS");
             var allowedOrigins = corsSection.GetValue<string>("allowedOrigins").Split(';');
