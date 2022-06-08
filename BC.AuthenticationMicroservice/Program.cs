@@ -26,7 +26,7 @@ services.AddSingleton<ILoggerManager, LoggerManager>();
 services.AddScoped<IUserService, UserService>();
 services.AddScoped<IRoleService, RoleService>();
 services.AddAutoMapper(typeof(MappingProfile));
-services.ConfigureCors();
+services.ConfigureCors(configuration);
 services.AddBCMessaging(configuration, builder.Environment.IsDevelopment());
 
 services.AddControllers().AddNewtonsoftJson(options =>
@@ -38,11 +38,8 @@ var app = builder.Build();
 
 app.UseMiddleware<ExceptionMiddleware>();
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+app.UseSwagger();
+app.UseSwaggerUI();
 
 app.UseHttpsRedirection();
 app.UseCors("CorsPolicy");
