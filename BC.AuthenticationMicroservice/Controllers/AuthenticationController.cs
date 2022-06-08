@@ -64,7 +64,7 @@ namespace BC.AuthenticationMicroservice.Controllers
         /// <summary>
         ///  User registration in system.
         /// </summary>
-        /// <param name="request">User data for registration.</param>
+        /// <param name="userRequest">User data for registration.</param>
         /// <response code="201">New user registered successfully.</response> 
         /// <response code="401">You need to authorize first</response>
         /// <response code="500">Internal Server Error</response>

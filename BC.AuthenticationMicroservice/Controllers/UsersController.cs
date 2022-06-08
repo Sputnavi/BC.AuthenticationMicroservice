@@ -151,7 +151,7 @@ namespace BC.AuthenticationMicroservice.Controllers
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        [HttpGet("account", Name = "GetAccountInfo")]
+        [HttpGet("account/mine", Name = "GetAccountInfo")]
         public async Task<IActionResult> GetCurrentUser()
         {
             if (!User.Identity.IsAuthenticated)
